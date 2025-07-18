@@ -73,6 +73,7 @@ web_modules/
 .env
 .env.test
 .env.production
+./env
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -118,4 +119,5 @@ dist
 .pnp.*
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node
+.env
 .env
