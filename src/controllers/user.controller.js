@@ -384,6 +384,6 @@ export { registerUser,
        changeCurrentPassword,
         getCurrentUser,
          updateAccountDetails,
-         updateUserAvatar,
-         updateUserCoverImage
+          updateUserAvatar,
+           updateUserCoverImage
     };
