@@ -1,7 +1,7 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import {User} from '../models/user.model.js';
-import {uploadOnCloudinary, deleteFromCloudinary} from '../utils/cloudinary.js';
+import {uploadOnCloudinary} from '../utils/cloudinary.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import jwt from "jsonwebtoken"
 import mongoose from 'mongoose';
@@ -317,8 +317,6 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
 
     //TODO: delete old image - assignment
 
-
-
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
     if (!avatar.url) {
@@ -343,54 +341,41 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
     )
 })
 
-const updateUserCoverImage = asyncHandler(async (req, res) => {
-    const coverImageLocalPath = req.file?.path;
+
+const updateUserCoverImage = asyncHandler(async(req, res) => {
+    const coverImageLocalPath = req.file?.path
 
     if (!coverImageLocalPath) {
-        throw new ApiError(400, "Cover image file is missing");
+        throw new ApiError(400, "Cover image file is missing")
     }
 
-    // Step 1: Get the existing user and their current cover image
-    const existingUser = await User.findById(req.user?._id);
-    if (!existingUser) {
-        throw new ApiError(404, "User not found");
+    //TODO: delete old image - assignment
+
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    if (!coverImage.url) {
+        throw new ApiError(400, "Error while uploading on avatar")
+        
     }
 
-    // Step 2: Upload the new cover image to Cloudinary
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-    if (!coverImage?.url) {
-        throw new ApiError(400, "Error while uploading cover image");
-    }
-
-    // Step 3: Extract public_id from the old image URL if it exists
-    let oldImagePublicId = null;
-    if (existingUser.coverImage) {
-        const urlParts = existingUser.coverImage.split('/');
-        const publicIdWithExt = urlParts.slice(urlParts.indexOf('upload') + 1).join('/');
-        oldImagePublicId = publicIdWithExt.replace(/\.[^/.]+$/, ""); // remove extension
-    }
-
-    // Step 4: Update the user's cover image URL in the database
-    const updatedUser = await User.findByIdAndUpdate(
-        req.user._id,
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
         {
-            $set: {
+            $set:{
                 coverImage: coverImage.url
             }
         },
-        { new: true }
-    ).select("-password");
+        {new: true}
+    ).select("-password")
 
-    // Step 5: Delete the old image from Cloudinary if it existed
-    if (oldImagePublicId) {
-        await deleteFromCloudinary(oldImagePublicId, 'image');
-    }
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, user, "Cover image updated successfully")
+    )
+})
 
-    // Step 6: Return response
-    return res.status(200).json(
-        new ApiResponse(200, updatedUser, "Cover image updated successfully")
-    );
-});
 
 const getUserChannelProfile = asyncHandler(async(req,res) => {
     const {username} = req.params
